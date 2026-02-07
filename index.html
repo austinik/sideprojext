@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocol: VALENTINE</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --box-color: #111;
+            --accent-color: #ff3b3b; /* RED (Romance) */
+            --ugly-green: #6b8e23; /* MUDDY GREEN (Friend Zone) */
+            --text-color: #e0e0e0;
+            --font-main: 'Courier New', Courier, monospace; 
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            padding-bottom: 100px;
+        }
+
+        /* --- HEADER SECTION --- */
+        .header-section {
+            text-align: center;
+            margin-top: 50px;
+            margin-bottom: 50px; 
+            position: relative;
+            z-index: 2;
+            min-height: 120px; 
+        }
+
+        .static-text {
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .dynamic-wrapper {
+            font-size: 3rem; 
+            font-weight: 900;
+            display: block; 
+        }
+
+        #dynamic-text {
+            color: var(--accent-color);
+            text-shadow: 0 0 20px rgba(255, 59, 59, 0.6);
+            transition: opacity 1s ease-in-out; 
+            opacity: 1;
+        }
+
+        .fade-out { opacity: 0 !important; }
+
+        /* --- THE TIMELINE LINE --- */
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 140px; 
+            bottom: 0;
+            width: 2px;
+            
+            /* ADJUSTED GRADIENT */
+            background: linear-gradient(180deg, 
+                var(--accent-color) 0%, 
+                var(--accent-color) 20%, 
+                var(--ugly-green) 25%, 
+                var(--ugly-green) 40%, 
+                var(--accent-color) 50%, 
+                var(--accent-color) 100%);
+                
+            transform: translateX(-50%);
+            z-index: 0;
+            opacity: 0.5;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        /* --- MEMORY BOXES --- */
+        .memory-box {
+            position: relative;
+            background: var(--box-color);
+            border: 1px solid #333;
+            padding: 25px;
+            margin: 60px 0; 
+            width: 45%; 
+            border-radius: 4px;
+            z-index: 1;
+            opacity: 0; 
+            transform: translateY(30px);
+            transition: all 2.5s ease-out;
+        }
+
+        /* WIDER BOX FOR TEXT SCREENSHOTS */
+        #box2 { width: 60%; z-index: 5; }
+
+        .memory-box.visible { opacity: 1; transform: translateY(0); }
+        .right { margin-left: auto; text-align: right; }
+        .left { margin-right: auto; text-align: left; }
+
+        .memory-img {
+            width: 100%; border-radius: 4px; margin-bottom: 15px;
+            border: 1px solid #333; filter: grayscale(100%); transition: 0.5s;
+        }
+        .memory-box:hover .memory-img { filter: grayscale(0%); }
+
+        /* --- UGLY GREEN MODE --- */
+        .green-mode {
+            border-color: var(--ugly-green) !important;
+            box-shadow: 0 0 10px rgba(107, 142, 35, 0.1); 
+        }
+        .green-mode .timestamp { color: var(--ugly-green) !important; }
+        .green-mode:hover { box-shadow: 0 0 20px rgba(107, 142, 35, 0.2); }
+        .green-mode .memory-img { border-color: var(--ugly-green); }
+
+        .big-emoji-container {
+            text-align: center; font-size: 8rem; margin: 20px 0; line-height: 1;
+        }
+
+        .timestamp {
+            font-size: 0.7rem; color: var(--accent-color); display: block; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        
+        .content { font-size: 0.9rem; line-height: 1.5; }
+
+
+        /* --- SLIDESHOW STYLES --- */
+        .slideshow-container {
+            position: relative; width: 100%; height: 0; padding-bottom: 160%; 
+            overflow: hidden; margin-bottom: 15px; border: 1px solid #333;
+            border-radius: 4px; background: #000;
+        }
+
+        /* Standard 3-Image Animation */
+        .slideshow-container img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: contain; opacity: 0; filter: grayscale(80%);
+            transition: filter 0.5s;
+            animation: fadeCycle 9s infinite; 
+        }
+        .memory-box:hover .slideshow-container img { filter: grayscale(0%); }
+
+        .slideshow-container img:nth-child(1) { animation-delay: 0s; }
+        .slideshow-container img:nth-child(2) { animation-delay: 3s; }
+        .slideshow-container img:nth-child(3) { animation-delay: 6s; }
+
+        /* 4-Image Animation (For The Return Log 6) */
+        .slideshow-return img { animation: fadeCycle4 12s infinite !important; }
+        .slideshow-return img:nth-child(1) { animation-delay: 0s; }
+        .slideshow-return img:nth-child(2) { animation-delay: 3s; }
+        .slideshow-return img:nth-child(3) { animation-delay: 6s; }
+        .slideshow-return img:nth-child(4) { animation-delay: 9s; }
+
+        @keyframes fadeCycle {
+            0% { opacity: 0; } 10% { opacity: 1; } 33% { opacity: 1; } 43% { opacity: 0; } 100% { opacity: 0; }
+        }
+        
+        @keyframes fadeCycle4 {
+            0% { opacity: 0; } 5% { opacity: 1; } 20% { opacity: 1; } 25% { opacity: 0; } 100% { opacity: 0; } 
+        }
+
+
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 768px) {
+            .memory-box {
+                width: 75% !important; /* Slightly wider for mobile */
+                margin: 40px 0 !important; /* Keep vertical spacing */
+            }
+            .slideshow-container { padding-bottom: 140%; }
+            #box2 { width: 85% !important; }
+            .timeline-line { opacity: 0.3; width: 1px; } /* Thinner line on mobile */
+            
+            /* KEEP THE ZIGZAG - Don't center these! */
+            .right { 
+                margin-left: auto !important; 
+                margin-right: 0 !important;
+                text-align: right !important;
+            }
+            .left { 
+                margin-left: 0 !important;
+                margin-right: auto !important; 
+                text-align: left !important;
+            }
+            
+            /* ONLY center the quiz */
+            .quiz-section { 
+                padding: 20px;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            .question-text { font-size: 1rem; text-align: center; }
+            .quiz-btn { font-size: 0.9rem; padding: 12px; }
+        }
+
+
+
+        /* ========================================= */
+        /* === THE NEW QUIZ SECTION === */
+        /* ========================================= */
+        .quiz-section {
+            margin-top: 150px; 
+            border: 1px solid var(--accent-color); 
+            padding: 30px;
+            background: #000; 
+            border-radius: 8px;
+            text-align: center;
+            opacity: 0; 
+            transform: translateY(50px);
+            transition: all 1s ease-out;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(255, 59, 59, 0.1);
+        }
+        .quiz-section.visible { opacity: 1; transform: translateY(0); }
+
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin-bottom: 20px;
+            border-radius: 2px;
+        }
+        
+        .progress-bar {
+            width: 5%; /* Start small */
+            height: 100%;
+            background: var(--accent-color);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .quiz-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 15px;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 4px;
+        }
+
+        .quiz-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(255, 59, 59, 0.05);
+        }
+
+        /* Overlay for Feedback */
+        .feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .feedback-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .feedback-text {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 20px;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(255, 59, 59, 0.3);
+            background: #000;
+        }
+
+        .shake { animation: shake 0.5s; border-color: red; color: red; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        
+        /* CONFETTI CANVAS */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 999;
+        }
+
+    </style>
+</head>
+<body>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="container">
+        
+        <div class="header-section">
+            <div class="static-text">Hey,</div>
+            <div class="dynamic-wrapper">
+                <span id="dynamic-text">Baby 🫶🏾</span>
+            </div>
+        </div>
+
+        <div class="timeline-line"></div>
+
+        <div class="memory-box right" id="box1">
+            <span class="timestamp">THE BEGINNING</span>
+            <div class="content" style="font-size: 1.1rem; font-style: italic;">
+                "I just wanted to remind you how it all started..."
+            </div>
+        </div>
+
+        <div class="memory-box left" id="box2">
+            <span class="timestamp">MAY 26, 2024</span>
+            <div class="slideshow-container">
+                <img src="https://i.ibb.co/B2RYsdMY/IMG-8061.jpg">
+                <img src="https://i.ibb.co/C3F3Hdk9/IMG-8062.jpg">
+                <img src="https://i.ibb.co/cSXwyXW2/IMG-8066.jpg">
+            </div>
+            <div class="content">
+                I remember the first time I realized it was mutual... and we actually spoke about it.
+            </div>
+        </div>
+
+        <div class="memory-box right scroll-trigger">
+            <span class="timestamp">THE MOMENT</span>
+            <img src="https://i.ibb.co/JW5sWWss/IMG-8063.jpg" class="memory-img">
+            <div class="content">Then you said yes.</div>
+        </div>
+
+        <div class="memory-box left scroll-trigger green-mode">
+            <span class="timestamp">FALLING OUT</span>
+            <div class="big-emoji-container">💔</div>
+            <div class="content">After two weeks we fell out and broke up.</div>
+        </div>
+
+        <div class="memory-box right scroll-trigger green-mode">
+            <span class="timestamp">THE BREAK</span>
+            <img src="https://i.ibb.co/0jYMJyvy/IMG-8067.jpg" class="memory-img">
+            <div class="content">
+                We made up and agreed to be friends.<br><br>
+                <span style="font-size:0.8rem; opacity:0.8;">Our first actual date (I don't have the video of when your friends videoed us anymore).</span>
+            </div>
+        </div>
+
+        <div class="memory-box left scroll-trigger">
+            <span class="timestamp">THE RETURN</span>
+            <div class="slideshow-container slideshow-return">
+                <img src="https://i.ibb.co/cXhBkj13/lv-0-20260207044000.gif">
+                <img src="https://i.ibb.co/LXLr1ZN1/lv-0-20260207044248.gif">
+                <img src="https://i.ibb.co/ksQRHRjr/lv-0-20260207044447.gif">
+                <img src="https://i.ibb.co/sdmCRcHv/lv-0-20260207090337.gif">
+            </div>
+            <div class="content">
+                And then we had another date where everything just felt like it clicked 😭
+            </div>
+        </div>
+
+        <div class="memory-box right scroll-trigger">
+            <span class="timestamp">AUGUST 26, 2025</span>
+            <img src="https://i.ibb.co/sJRjwTYK/Snapchat-1625698348.jpg" class="memory-img">
+            <div class="content">
+                Then the next day we made up and started dating again.
+            </div>
+        </div>
+
+        <div class="memory-box left scroll-trigger">
+            <span class="timestamp">IKEJA DATE</span>
+            <div class="slideshow-container">
+                <img src="https://i.ibb.co/dJtLtsjn/Screenshot-20260207-051722.jpg">
+                <img src="https://i.ibb.co/nsSGcXKD/Screenshot-20260207-051745.jpg">
+                <img src="https://i.ibb.co/RkG4pkqh/Screenshot-20260207-051815.jpg">
+            </div>
+            <div class="content">
+                Then our other date when you paid for the food and I fell ill on the road in ikeja and we had to sit at a random shop 😭
+            </div>
+        </div>
+
+        <div class="memory-box right scroll-trigger">
+            <span class="timestamp">MY FAVORITES</span>
+            <img src="https://i.ibb.co/0yDSjrz5/IMG-0196.jpg" class="memory-img">
+            <div class="content">
+                The pics you said were my favorite but that's kinda weird because you're my favorite so all your pics are technically my Favorite pics 😝❤️
+            </div>
+        </div>
+
+        <div class="memory-box left scroll-trigger">
+            <span class="timestamp">MORE FAVORITES</span>
+            <div class="slideshow-container">
+                <img src="https://i.ibb.co/LDfGDXk0/lv-0-20260207091752.gif">
+                <img src="https://i.ibb.co/GQdvfBQ8/lv-0-20260207090241.gif">
+                <img src="https://i.ibb.co/4ntDCXjL/lv-0-20260207083933.gif">
+            </div>
+            <div class="content">
+                Adding some more of <strong style="color: var(--accent-color);">My FAVORITES</strong> just because 😝
+            </div>
+        </div>
+
+        <div class="memory-box right scroll-trigger">
+            <span class="timestamp">OUR LAST DATE</span>
+            <div class="slideshow-container">
+                <img src="https://i.ibb.co/VWPKcNxY/lv-0-20260207092852.gif">
+                <img src="https://i.ibb.co/f7PrL5W/lv-0-20260207092922.gif">
+                <img src="https://i.ibb.co/twvGfTkc/lv-0-20260207092941.gif">
+            </div>
+            <div class="content">
+                So many things happened since then.<br><br>
+                Then our last date when I came to your school and saw you after clinical practice...<br>
+                <strong>My nurse 😝</strong>
+            </div>
+        </div>
+
+        <div class="quiz-section scroll-trigger" id="quizCard">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div id="quizContent">
+                <div class="question-text" id="questionText">Loading...</div>
+                <div class="options-grid" id="optionsGrid"></div>
+            </div>
+
+            <div class="feedback-overlay" id="feedbackOverlay">
+                <div class="feedback-text" id="feedbackText"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CONFETTI CANVAS (REQUIRED FOR SUCCESS ANIMATION) -->
+    <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></canvas>
+
+    <script>
+        // --- HEADER TEXT CYCLE ---
+        const words = ["Baby 🫶🏾", "Onitemi ❤️", "Ireeee 💗", "My sunshine 😝🫶🏾"];
+        let currentIndex = 0;
+        const textElement = document.getElementById("dynamic-text");
+
+        function cycleText() {
+            textElement.classList.add("fade-out");
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % words.length;
+                textElement.innerText = words[currentIndex];
+                textElement.classList.remove("fade-out");
+            }, 1000); 
+        }
+        setInterval(cycleText, 4000); 
+
+        // --- SCROLL ANIMATIONS ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 }); // Trigger sooner for better flow
+
+        document.querySelectorAll('.scroll-trigger').forEach(el => observer.observe(el));
+        
+        window.onload = function() {
+            setTimeout(() => { document.getElementById('box1').classList.add('visible'); }, 1000);
+            setTimeout(() => { document.getElementById('box2').classList.add('visible'); }, 5000);
+        };
+
+
+        // --- QUIZ LOGIC ---
+        const questions = [
+            {
+                text: "Let's see if you were paying attention to our journey",
+                options: [
+                    { text: "Ready", feedback: "Let's go! 🚀" }
+                ]
+            },
+            {
+                text: "What date did we start dating?",
+                options: [
+                    { text: "Since the start of time", feedback: "Real we've been destined for each other ❤️" },
+                    { text: "May 26 2024", feedback: "My attentive baby 🥺" }
+                ]
+            },
+            {
+                text: "How much does Austin love you?",
+                options: [
+                    { text: "More than the world", feedback: "You are literally my world 🌍" },
+                    { text: "More than his laptop", feedback: "Close, but he loves you just a bit more 😝" },
+                    { text: "More than anything", feedback: "You are my everything 😭" }
+                ]
+            },
+            {
+                text: "We've made a lot of memories together I love you so so much and I want to make more memories with you will you be my valentine?",
+                final: true,
+                options: [
+                    { text: "Yes", action: "success" },
+                    { text: "No", action: "fail" }
+                ]
+            }
+        ];
+
+        let currentQ = 0;
+        const quizText = document.getElementById('questionText');
+        const optionsGrid = document.getElementById('optionsGrid');
+        const feedbackOverlay = document.getElementById('feedbackOverlay');
+        const feedbackText = document.getElementById('feedbackText');
+        const progressBar = document.getElementById('progressBar');
+
+        function loadQuestion() {
+            const q = questions[currentQ];
+            quizText.innerText = q.text;
+            optionsGrid.innerHTML = '';
+
+            // Update Progress Bar
+            const progress = ((currentQ + 1) / questions.length) * 100;
+            progressBar.style.width = progress + "%";
+
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-btn';
+                btn.innerText = opt.text;
+                btn.onclick = () => handleAnswer(opt);
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(opt) {
+            if (questions[currentQ].final) {
+                if (opt.action === 'fail') {
+                    // Show Error Alert
+                    feedbackText.innerText = "Error: The developer was too lazy to code this button (not an option) 😝";
+                    feedbackText.style.borderColor = "red";
+                    feedbackText.style.color = "red";
+                    feedbackOverlay.classList.add('active');
+                    
+                    // Close error after 2s
+                    setTimeout(() => {
+                        feedbackOverlay.classList.remove('active');
+                    }, 2500);
+                } else {
+                    // SUCCESS!
+                    startConfetti();
+                    quizText.innerHTML = "<span style='color:var(--accent-color); font-size:1.5rem;'>Yayyyy yes I love you so so much baby ❤️</span><br><br><span id='countdown-display' style='font-size:0.9rem; color: var(--text-color);'></span>";
+                    optionsGrid.innerHTML = "";
+                    progressBar.style.width = "100%";
+                    
+                    // Start countdown and update every second
+                    updateCountdown();
+                    setInterval(updateCountdown, 1000);
+                }
+                return;
+            }
+
+            // Normal Questions
+            feedbackText.innerText = opt.feedback;
+            feedbackText.style.borderColor = "var(--accent-color)";
+            feedbackText.style.color = "var(--accent-color)";
+            feedbackOverlay.classList.add('active');
+
+            setTimeout(() => {
+                feedbackOverlay.classList.remove('active');
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                }
+            }, 2000); // 2 second delay to read feedback
+        }
+
+        // Load first question on start
+        loadQuestion();
+
+
+        // --- COUNTDOWN TIMER (Time Together) ---
+        function getTimeTogether() {
+            const startDate = new Date('2024-05-26T00:00:00'); // May 26, 2024
+            const now = new Date();
+            const diff = now - startDate;
+
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const months = Math.floor(days / 30.44); // Average month length
+            const years = Math.floor(months / 12);
+
+            const remainingMonths = months % 12;
+            const remainingDays = Math.floor((days % 30.44));
+            const remainingHours = hours % 24;
+            const remainingMinutes = minutes % 60;
+            const remainingSeconds = seconds % 60;
+
+            return {
+                years,
+                months: remainingMonths,
+                days: remainingDays,
+                hours: remainingHours,
+                minutes: remainingMinutes,
+                seconds: remainingSeconds
+            };
+        }
+
+        function updateCountdown() {
+            const time = getTimeTogether();
+            const countdownText = `We've been together for ${time.years} year(s), ${time.months} month(s), ${time.days} day(s), ${time.hours} hour(s), ${time.minutes} minute(s), ${time.seconds} second(s) and counting ❤️`;
+            
+            const countdownEl = document.getElementById('countdown-display');
+            if (countdownEl) {
+                countdownEl.innerText = countdownText;
+            }
+        }
+
+
+        // --- CONFETTI EFFECT ---
+        function startConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const pieces = [];
+            const colors = ['#ff3b3b', '#ff7b7b', '#ffffff', '#6b8e23'];
+
+            for (let i = 0; i < 200; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 10 + 5,
+                    speed: Math.random() * 5 + 2,
+                    angle: Math.random() * 360
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach(p => {
+                    p.y += p.speed;
+                    p.angle += 2;
+                    ctx.fillStyle = p.color;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.angle * Math.PI / 180);
+                    ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    ctx.restore();
+
+                    if (p.y > canvas.height) p.y = -20;
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+    </script>
+</body>
+</html>
