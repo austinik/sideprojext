@@ -153,19 +153,8 @@
         .slideshow-container img:nth-child(2) { animation-delay: 3s; }
         .slideshow-container img:nth-child(3) { animation-delay: 6s; }
 
-        /* 4-Image Animation (For The Return Log 6) */
-        .slideshow-return img { animation: fadeCycle4 12s infinite !important; }
-        .slideshow-return img:nth-child(1) { animation-delay: 0s; }
-        .slideshow-return img:nth-child(2) { animation-delay: 3s; }
-        .slideshow-return img:nth-child(3) { animation-delay: 6s; }
-        .slideshow-return img:nth-child(4) { animation-delay: 9s; }
-
         @keyframes fadeCycle {
             0% { opacity: 0; } 10% { opacity: 1; } 33% { opacity: 1; } 43% { opacity: 0; } 100% { opacity: 0; }
-        }
-        
-        @keyframes fadeCycle4 {
-            0% { opacity: 0; } 5% { opacity: 1; } 20% { opacity: 1; } 25% { opacity: 0; } 100% { opacity: 0; } 
         }
 
 
@@ -370,11 +359,10 @@
 
         <div class="memory-box left scroll-trigger">
             <span class="timestamp">THE RETURN</span>
-            <div class="slideshow-container slideshow-return">
+            <div class="slideshow-container">
                 <img src="https://i.ibb.co/cXhBkj13/lv-0-20260207044000.gif">
                 <img src="https://i.ibb.co/LXLr1ZN1/lv-0-20260207044248.gif">
                 <img src="https://i.ibb.co/ksQRHRjr/lv-0-20260207044447.gif">
-                <img src="https://i.ibb.co/sdmCRcHv/lv-0-20260207090337.gif">
             </div>
             <div class="content">
                 And then we had another date where everything just felt like it clicked 😭
@@ -452,7 +440,6 @@
 
     </div>
 
-    <!-- CONFETTI CANVAS (REQUIRED FOR SUCCESS ANIMATION) -->
     <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></canvas>
 
     <script>
